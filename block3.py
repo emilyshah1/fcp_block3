@@ -2,64 +2,45 @@ import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 import numpy as np
 
-N = 1000
-S = N-1
-I = 1
-R = 0
+X = 50
+Y = 50
 
-def diff_sir(sir, t, beta, gamma):
-    '''
-    calculates the gradient for an SIR model of disease spread
-    Inputs:
-        sir: state of the system, with sir[0] = number susceptible
-                                                                sir[1] = number infected
-                                                                sir[2] = number recovered
-        t: current time - not used her, but odeint expects to pass this argument so we must include it
-        beta: the rate at which the virus spreads
-        gamma: the rate at which people are removed due to the virus
-    Outputs:
-        the gradient of the SIR model
-    '''
-    dsdt = (-beta*sir[0] * sir[1])/N
-    didt = (beta*sir[0]*sir[1])/N - (gamma * sir[1])
-    drdt = gamma * sir[1]
+def diff_lv(xy, t, alpha, beta, delta, gamma):
+    dxdt = (alpha * xy[0]) - (beta * xy[0] * xy[1])
+    dydt = (delta * xy[0] * xy[1]) - (gamma * xy[1])
+    return [dxdt, dydt]
 
-    grad = [dsdt, didt, drdt]
-
-    return grad
-
-def solve_sir(sir0, t_max, beta, gamma):
-    '''
-    Solves an SIR model using odeint
-    '''
-    
+def solve_lv(xy0, t_max, alpha, beta, delta, gamma):
     t = np.linspace(0, t_max)
-    sir = odeint(diff_sir, sir0, t, (beta, gamma))
+    xy = odeint(diff_lv, xy0, t, args=(alpha, beta, delta, gamma))
+    return xy, t
 
-    return sir, t
-
-def plot_sir(t, data):
-
+def plot_lv(t, data):
     fig = plt.figure()
-    ax1 = fig.add_subplot(311)
-    ax1.plot(t, data[:, 0], label='S(t)')
-    ax2 = fig.add_subplot(312)
-    ax2.plot(t, data[:, 1], label='I(t)')
-    ax3 = fig.add_subplot(313)
-    ax3.plot(t, data[:, 2], label='R(t)')
+    ax1 = fig.add_subplot(211)
+    ax1.plot(t, data[:, 0], label='X(t)')
+    ax2 = fig.add_subplot(212)
+    ax2.plot(t, data[:, 1], label='Y(t)')
+    ax1.legend()
+    ax2.legend()
+
     plt.show()
 
-    return t, data
-
 def main():
+    alpha = 0.4
+    beta = 0.1
+    delta = 0.2
+    gamma = 0.3
 
-    beta = 0.4
-    gamma = 0.2
     t_max = 100
 
-    sir0 = (S, I, R)
-    sir, t = solve_sir(sir0, t_max, beta, gamma)
-    plot_sir(t, sir)
+    xy0 = (X, Y)
+    xy, t = solve_lv(xy0, t_max, alpha, beta, delta, gamma)
+
+    plot_lv(t, xy)
 
 if __name__ == "__main__":
     main()
+
+
+
